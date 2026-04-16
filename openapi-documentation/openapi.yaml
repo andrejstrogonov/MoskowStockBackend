@@ -1,0 +1,915 @@
+openapi: 3.0.3
+info:
+  title: Moscow Stock Portfolio API
+  description: API for managing portfolios of securities from Moscow Exchange
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+
+paths:
+  /instruments:
+    get:
+      summary: Get list of instruments
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [bond, stock, futures]
+          description: Filter by instrument type
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Instrument'
+    post:
+      summary: Create new instrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Bond'
+                - $ref: '#/components/schemas/Stock'
+                - $ref: '#/components/schemas/Futures'
+      responses:
+        '201':
+          description: Instrument created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instrument'
+
+  /instruments/{id}:
+    get:
+      summary: Get instrument by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instrument'
+        '404':
+          description: Instrument not found
+    put:
+      summary: Update instrument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Bond'
+                - $ref: '#/components/schemas/Stock'
+                - $ref: '#/components/schemas/Futures'
+      responses:
+        '200':
+          description: Instrument updated
+        '404':
+          description: Instrument not found
+    delete:
+      summary: Delete instrument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Instrument deleted
+        '404':
+          description: Instrument not found
+
+  /portfolios:
+    get:
+      summary: Get list of portfolios
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Portfolio'
+    post:
+      summary: Create new portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portfolio'
+      responses:
+        '201':
+          description: Portfolio created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+
+  /portfolios/{id}:
+    get:
+      summary: Get portfolio by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '404':
+          description: Portfolio not found
+    put:
+      summary: Update portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portfolio'
+      responses:
+        '200':
+          description: Portfolio updated
+        '404':
+          description: Portfolio not found
+    delete:
+      summary: Delete portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Portfolio deleted
+        '404':
+          description: Portfolio not found
+
+  /portfolios/{id}/positions:
+    get:
+      summary: Get positions in portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+        '404':
+          description: Portfolio not found
+    post:
+      summary: Add position to portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '201':
+          description: Position added
+        '404':
+          description: Portfolio not found
+
+  /portfolios/{portfolioId}/positions/{positionId}:
+    put:
+      summary: Update position in portfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '200':
+          description: Position updated
+        '404':
+          description: Portfolio or position not found
+    delete:
+      summary: Remove position from portfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Position removed
+        '404':
+          description: Portfolio or position not found
+
+  /portfolios/generate-goal:
+    post:
+      summary: Generate portfolio for financial goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+      responses:
+        '200':
+          description: Portfolio generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalResponse'
+
+  /calculators/deposit:
+    post:
+      summary: Calculate deposit growth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositResponse'
+
+  /calculators/loan:
+    post:
+      summary: Calculate loan with early repayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRequest'
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanResponse'
+
+  /calculators/black-scholes:
+    post:
+      summary: Calculate Black-Scholes option price
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackScholesRequest'
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackScholesResponse'
+
+  /calculators/bond-yield:
+    post:
+      summary: Calculate bond yield
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BondYieldRequest'
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BondYieldResponse'
+
+  /calculators/stock-analysis:
+    post:
+      summary: Analyze stock based on company metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAnalysisRequest'
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockAnalysisResponse'
+
+components:
+  schemas:
+    Instrument:
+      type: object
+      required:
+        - id
+        - ticker
+        - name
+        - type
+        - currentPrice
+        - lastUpdate
+      properties:
+        id:
+          type: string
+        ticker:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [bond, stock, futures]
+        currentPrice:
+          type: number
+          format: double
+        lastUpdate:
+          type: string
+          format: date-time
+      discriminator:
+        propertyName: type
+
+    Bond:
+      allOf:
+        - $ref: '#/components/schemas/Instrument'
+        - type: object
+          required:
+            - faceValue
+            - couponRate
+            - couponFrequency
+            - maturityDate
+            - accrualInterest
+            - isOFZ
+          properties:
+            faceValue:
+              type: number
+              format: double
+            couponRate:
+              type: number
+              format: double
+            couponFrequency:
+              type: integer
+            maturityDate:
+              type: string
+              format: date-time
+            accrualInterest:
+              type: number
+              format: double
+            isOFZ:
+              type: boolean
+            rating:
+              type: number
+              format: double
+            issuer:
+              type: string
+
+    Stock:
+      allOf:
+        - $ref: '#/components/schemas/Instrument'
+        - type: object
+          required:
+            - dividendYield
+            - eps
+            - pe
+            - roe
+            - dividendPayout
+            - sector
+            - isExporter
+            - marketCap
+          properties:
+            dividendYield:
+              type: number
+              format: double
+            eps:
+              type: number
+              format: double
+            pe:
+              type: number
+              format: double
+            roe:
+              type: number
+              format: double
+            dividendPayout:
+              type: number
+              format: double
+            sector:
+              type: string
+              enum: [energy, metals, chemicals, transport, finance, utilities, it, retail, infrastructure, other]
+            isExporter:
+              type: boolean
+            marketCap:
+              type: number
+              format: double
+            companyName:
+              type: string
+
+    Futures:
+      allOf:
+        - $ref: '#/components/schemas/Instrument'
+        - type: object
+          required:
+            - underlyingAsset
+            - expirationDate
+            - multiplier
+            - volatility
+            - riskFreeRate
+            - role
+          properties:
+            underlyingAsset:
+              type: string
+            expirationDate:
+              type: string
+              format: date-time
+            multiplier:
+              type: number
+              format: double
+            volatility:
+              type: number
+              format: double
+            riskFreeRate:
+              type: number
+              format: double
+            spotPrice:
+              type: number
+              format: double
+            role:
+              type: string
+              enum: [hedger, speculator, arbitrageur]
+
+    Portfolio:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - type
+        - positions
+        - createdDate
+        - lastModified
+        - targetBonds
+        - targetStocks
+        - targetFutures
+        - targetCash
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [conservative, balanced, aggressive, custom]
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        createdDate:
+          type: string
+          format: date-time
+        lastModified:
+          type: string
+          format: date-time
+        targetBonds:
+          type: number
+          format: double
+        targetStocks:
+          type: number
+          format: double
+        targetFutures:
+          type: number
+          format: double
+        targetCash:
+          type: number
+          format: double
+
+    Position:
+      type: object
+      required:
+        - id
+        - instrumentId
+        - quantity
+        - purchasePrice
+        - purchaseDate
+        - currentPrice
+      properties:
+        id:
+          type: string
+        instrumentId:
+          type: string
+        quantity:
+          type: number
+          format: double
+        purchasePrice:
+          type: number
+          format: double
+        purchaseDate:
+          type: string
+          format: date-time
+        currentPrice:
+          type: number
+          format: double
+        notes:
+          type: string
+
+    GoalRequest:
+      type: object
+      required:
+        - capital
+        - targetAnnualReturnPercent
+        - years
+        - riskLevel
+      properties:
+        capital:
+          type: number
+          format: double
+        targetAnnualReturnPercent:
+          type: number
+          format: double
+        years:
+          type: integer
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+
+    GoalResponse:
+      type: object
+      required:
+        - portfolio
+        - expectedReturn
+        - achievable
+        - recommendation
+      properties:
+        portfolio:
+          $ref: '#/components/schemas/Portfolio'
+        expectedReturn:
+          type: number
+          format: double
+        achievable:
+          type: boolean
+        recommendation:
+          type: string
+
+    DepositRequest:
+      type: object
+      required:
+        - principal
+        - annualRate
+        - years
+        - compoundingFrequency
+      properties:
+        principal:
+          type: number
+          format: double
+        annualRate:
+          type: number
+          format: double
+        years:
+          type: integer
+        compoundingFrequency:
+          type: integer
+          default: 12
+
+    DepositResponse:
+      type: object
+      required:
+        - finalAmount
+        - totalInterest
+        - monthlyBreakdown
+      properties:
+        finalAmount:
+          type: number
+          format: double
+        totalInterest:
+          type: number
+          format: double
+        monthlyBreakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyData'
+
+    LoanRequest:
+      type: object
+      required:
+        - principal
+        - annualRate
+        - years
+        - earlyRepayments
+      properties:
+        principal:
+          type: number
+          format: double
+        annualRate:
+          type: number
+          format: double
+        years:
+          type: integer
+        earlyRepayments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EarlyRepayment'
+
+    LoanResponse:
+      type: object
+      required:
+        - monthlyPayments
+        - totalInterest
+        - totalPaid
+      properties:
+        monthlyPayments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyPayment'
+        totalInterest:
+          type: number
+          format: double
+        totalPaid:
+          type: number
+          format: double
+
+    EarlyRepayment:
+      type: object
+      required:
+        - month
+        - amount
+      properties:
+        month:
+          type: integer
+        amount:
+          type: number
+          format: double
+
+    MonthlyPayment:
+      type: object
+      required:
+        - month
+        - payment
+        - principal
+        - interest
+        - remainingBalance
+      properties:
+        month:
+          type: integer
+        payment:
+          type: number
+          format: double
+        principal:
+          type: number
+          format: double
+        interest:
+          type: number
+          format: double
+        remainingBalance:
+          type: number
+          format: double
+
+    MonthlyData:
+      type: object
+      required:
+        - month
+        - balance
+        - interestEarned
+      properties:
+        month:
+          type: integer
+        balance:
+          type: number
+          format: double
+        interestEarned:
+          type: number
+          format: double
+
+    BlackScholesRequest:
+      type: object
+      required:
+        - spotPrice
+        - strikePrice
+        - timeToExpiration
+        - volatility
+        - riskFreeRate
+        - isCall
+        - role
+      properties:
+        spotPrice:
+          type: number
+          format: double
+        strikePrice:
+          type: number
+          format: double
+        timeToExpiration:
+          type: number
+          format: double
+        volatility:
+          type: number
+          format: double
+        riskFreeRate:
+          type: number
+          format: double
+        isCall:
+          type: boolean
+        role:
+          type: string
+          enum: [hedger, speculator, arbitrageur]
+
+    BlackScholesResponse:
+      type: object
+      required:
+        - optionPrice
+        - delta
+        - gamma
+        - theta
+        - vega
+        - rho
+      properties:
+        optionPrice:
+          type: number
+          format: double
+        delta:
+          type: number
+          format: double
+        gamma:
+          type: number
+          format: double
+        theta:
+          type: number
+          format: double
+        vega:
+          type: number
+          format: double
+        rho:
+          type: number
+          format: double
+
+    BondYieldRequest:
+      type: object
+      required:
+        - faceValue
+        - currentPrice
+        - couponRate
+        - couponFrequency
+        - yearsToMaturity
+      properties:
+        faceValue:
+          type: number
+          format: double
+        currentPrice:
+          type: number
+          format: double
+        couponRate:
+          type: number
+          format: double
+        couponFrequency:
+          type: integer
+        yearsToMaturity:
+          type: number
+          format: double
+
+    BondYieldResponse:
+      type: object
+      required:
+        - yieldToMaturity
+        - currentYield
+        - duration
+        - modifiedDuration
+      properties:
+        yieldToMaturity:
+          type: number
+          format: double
+        currentYield:
+          type: number
+          format: double
+        duration:
+          type: number
+          format: double
+        modifiedDuration:
+          type: number
+          format: double
+
+    StockAnalysisRequest:
+      type: object
+      required:
+        - dividendYield
+        - eps
+        - pe
+        - roe
+        - dividendPayout
+        - marketCap
+        - sector
+      properties:
+        dividendYield:
+          type: number
+          format: double
+        eps:
+          type: number
+          format: double
+        pe:
+          type: number
+          format: double
+        roe:
+          type: number
+          format: double
+        dividendPayout:
+          type: number
+          format: double
+        marketCap:
+          type: number
+          format: double
+        sector:
+          type: string
+          enum: [energy, metals, chemicals, transport, finance, utilities, it, retail, infrastructure, other]
+
+    StockAnalysisResponse:
+      type: object
+      required:
+        - fairValue
+        - recommendation
+        - riskLevel
+        - sectorComparison
+      properties:
+        fairValue:
+          type: number
+          format: double
+        recommendation:
+          type: string
+          enum: [buy, hold, sell]
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        sectorComparison:
+          type: object
+          properties:
+            avgPE:
+              type: number
+              format: double
+            avgROE:
+              type: number
+              format: double
+            avgDividendYield:
+              type: number
+              format: double
