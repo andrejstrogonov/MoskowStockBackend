@@ -1,0 +1,118 @@
+version: '3.8'
+
+# Jenkins Docker Compose setup for local development/testing
+# This can also be used for production deployment with modifications
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: jenkins
+    user: root
+    restart: always
+    ports:
+      - "8082:8080"  # Jenkins UI
+      - "50000:50000" # Jenkins agent port
+    environment:
+      - JAVA_OPTS=-Xmx1024m -Xms512m
+      - JENKINS_OPTS=--prefix=/jenkins
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins/casc.yaml:/var/jenkins_home/casc.yaml
+      - ./jenkins/plugins.txt:/usr/share/jenkins/ref/plugins.txt
+    networks:
+      - jenkins-network
+    healthcheck:
+      test: curl -f http://localhost:8080/jenkins/api/json || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  docker-in-docker:
+    image: docker:dind
+    container_name: docker-dind
+    restart: always
+    privileged: true
+    expose:
+      - "2375"
+    environment:
+      - DOCKER_TLS_CERTDIR=
+    volumes:
+      - docker_cache:/var/lib/docker
+    networks:
+      - jenkins-network
+
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonardb
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonarpass
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      - postgres
+    networks:
+      - jenkins-network
+    healthcheck:
+      test: curl -f http://localhost:9000/api/system/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: jenkins-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=jenkins
+      - POSTGRES_PASSWORD=jenkins
+      - POSTGRES_DB=jenkins_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jenkins-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jenkins"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  registry:
+    image: registry:latest
+    container_name: registry
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      - jenkins-network
+    healthcheck:
+      test: curl -f http://localhost:5000/v2/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  jenkins_home:
+  postgres_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  docker_cache:
+  registry_data:
+
+networks:
+  jenkins-network:
+    driver: bridge
+

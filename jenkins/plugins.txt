@@ -1,0 +1,77 @@
+# Jenkins Plugins List
+# Install these plugins for the CI/CD pipeline to work properly
+# Format: plugin-id:version
+
+# Core plugins (usually pre-installed)
+cloudbees-folder:latest
+antisamy-markup-formatter:latest
+build-timeout:latest
+credentials-binding:latest
+timestamper:latest
+ws-cleanup:latest
+
+# Pipeline plugins
+workflow-aggregator:latest
+workflow-basic-steps:latest
+workflow-durable-task-step:latest
+workflow-multibranch:latest
+workflow-cps:latest
+
+# Docker plugins
+docker-plugin:latest
+docker-workflow:latest
+
+# Git plugins
+git:latest
+github:latest
+github-branch-source:latest
+
+# Testing and reporting plugins
+junit:latest
+xunit:latest
+jacoco:latest
+cobertura:latest
+workflow-junit-storage-plugin:latest
+
+# Code quality plugins
+sonar:latest
+warnings-ng:latest
+checkstyle:latest
+pmd:latest
+findbugs:latest
+
+# Email and notification plugins
+email-ext:latest
+mailer:latest
+slack:latest
+
+# Build tools plugins
+maven-plugin:latest
+
+# Credentials and security plugins
+credentials:latest
+ssh-credentials:latest
+ssh-agent:latest
+
+# Utility plugins
+ansicolor:latest
+log-parser:latest
+groovy:latest
+pipeline-model-definition:latest
+pipeline-model-declarative-agency:latest
+pipeline-model-extensions:latest
+lockable-resources:latest
+
+# Configuration plugins
+configuration-as-code:latest
+configuration-as-code-support:latest
+
+# Performance plugins
+performance:latest
+influxdb:latest
+
+# Additional useful plugins
+pipeline-stage-view:latest
+pipeline-github-lib:latest
+parameterized-trigger:latest
+

@@ -1,0 +1,120 @@
+# Jenkins Configuration as Code (JCasC) for automated setup
+# This file helps automate Jenkins configuration including plugins, credentials, and jobs
+
+jenkins:
+  securityRealm:
+    saml:
+      binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      displayNameAttributeName: "name"
+      groupsAttributeName: "groups"
+      idpMetadataConfiguration:
+        url: "https://your-idp/metadata"
+      mailAddressAttributeName: "email"
+      userNameAttributeName: "username"
+
+  authorizationStrategy:
+    projectMatrix:
+      permissions:
+        - "hudson.model.Hudson.Read:authenticated"
+        - "hudson.model.Item.Build:authenticated"
+        - "hudson.model.Item.Cancel:authenticated"
+        - "hudson.model.Item.Read:authenticated"
+        - "hudson.model.Run.Delete:authenticated"
+        - "hudson.model.Run.Update:authenticated"
+
+  remotingSecurity:
+    enabled: true
+
+  securityOptions:
+    - "hudson.security.csrf.CrumbIssuer$SessionCrumbIssuer"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basic:
+              scope: GLOBAL
+              id: "docker-registry-credentials"
+              username: "${DOCKER_USERNAME}"
+              password: "${DOCKER_PASSWORD}"
+              description: "Docker Registry Credentials"
+          - vaultString:
+              scope: GLOBAL
+              id: "sonarqube-token"
+              secret: "${SONARQUBE_TOKEN}"
+              description: "SonarQube Authentication Token"
+          - vaultString:
+              scope: GLOBAL
+              id: "slack-webhook"
+              secret: "${SLACK_WEBHOOK_URL}"
+              description: "Slack Webhook URL"
+
+unclassified:
+  email-ext:
+    smtpHost: "smtp.gmail.com"
+    smtpPort: 587
+    smtpUsername: "${SMTP_USERNAME}"
+    smtpPassword: "${SMTP_PASSWORD}"
+    smtpUseSSL: false
+    smtpUseTLS: true
+    charset: "UTF-8"
+    defaultSuffix: "@gmail.com"
+
+  sonarGlobalConfiguration:
+    installations:
+      - name: "SonarQube"
+        serverUrl: "http://sonarqube:9000"
+        serverAuthenticationToken: "${SONARQUBE_TOKEN}"
+        mojoVersion: ""
+        additionalProperties: ""
+        additionalAnalysisProperties: ""
+        skipScms: false
+
+  location:
+    url: "http://jenkins:8080/"
+
+  mailer:
+    charset: "UTF-8"
+    useSMTPAuth: true
+    smtpHost: "smtp.gmail.com"
+    smtpPort: 587
+    replyToAddress: "${JENKINS_EMAIL}"
+    smtpPassword: "${SMTP_PASSWORD}"
+    smtpUsername: "${SMTP_USERNAME}"
+
+tool:
+  maven:
+    installations:
+      - name: "Maven 3.9"
+        home: "${MAVEN_HOME}"
+
+  jdk:
+    installations:
+      - name: "JDK 21"
+        home: "${JAVA_HOME}"
+
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+
+jobs:
+  - script: >
+      pipelineJob('MoskowStockBackend') {
+        description('CI/CD Pipeline for MoskowStock Backend')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/your-repo/MoskowStockBackend.git')
+                  credentials('github-credentials')
+                }
+                branch('**')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }
+
