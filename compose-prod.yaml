@@ -1,7 +1,7 @@
 version: '3.8'
 
-# Production override for compose.yaml
-# Usage: docker compose -f compose.yaml -f compose.prod.yaml up -d
+# Production override for compose-dev.yaml
+# Usage: docker compose -f compose-dev.yaml -f compose-prod.yaml up -d
 
 services:
   app:

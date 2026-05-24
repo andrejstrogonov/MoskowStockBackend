@@ -166,16 +166,16 @@ feature/... → develop → main → v1.0.0 (tag)
 ```bash
 # Manual approval on version tags
 # Services: DB, RabbitMQ, App (with health checks)
-# Requires: docker compose -f compose.yaml -f compose.prod.yaml
+# Requires: docker compose -f compose-dev.yaml -f compose-prod.yaml
 ```
 
 ## 🐛 Troubleshooting
 
 ### Jenkins won't start?
 ```bash
-docker compose -f jenkins/compose.yaml logs jenkins
+docker compose -f jenkins/compose-dev.yaml logs jenkins
 docker system prune -a
-docker compose -f jenkins/compose.yaml up -d
+docker compose -f jenkins/compose-dev.yaml up -d
 ```
 
 ### Build fails?

@@ -44,7 +44,7 @@ chmod +x ./jenkins/jenkins.sh
 .\jenkins\jenkins.ps1 status
 
 # Get initial password
-docker compose -f jenkins/compose.yaml exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+docker compose -f jenkins/compose-dev.yaml exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
 ### Docker Management
@@ -178,9 +178,9 @@ git push origin v1.0.0
 
 ### Jenkins won't start
 ```bash
-docker compose -f jenkins/compose.yaml logs jenkins
+docker compose -f jenkins/compose-dev.yaml logs jenkins
 docker system prune -a
-docker compose -f jenkins/compose.yaml restart
+docker compose -f jenkins/compose-dev.yaml restart
 ```
 
 ### Build fails

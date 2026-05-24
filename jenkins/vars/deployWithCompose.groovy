@@ -1,9 +1,9 @@
 // Jenkins Shared Library function for deploying with Docker Compose
-// Usage: deployWithCompose(environment: 'dev', composeFiles: ['compose.yaml'])
+// Usage: deployWithCompose(environment: 'dev', composeFiles: ['compose-dev.yaml'])
 
 def call(Map config) {
     def environment = config.environment ?: 'dev'
-    def composeFiles = config.composeFiles ?: ['compose.yaml']
+    def composeFiles = config.composeFiles ?: ['compose-dev.yaml']
     def healthcheckUrl = config.healthcheckUrl ?: 'http://localhost:8080/swagger-ui.html'
     def maxWaitTime = config.maxWaitTime ?: 120
 

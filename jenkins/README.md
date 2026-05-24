@@ -131,7 +131,7 @@ pipeline {
             steps {
                 deployWithCompose(
                     environment: 'dev',
-                    composeFiles: ['compose.yaml']
+                    composeFiles: ['compose-dev.yaml']
                 )
             }
         }
