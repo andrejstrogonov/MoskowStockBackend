@@ -64,7 +64,7 @@ MoskowStockBackend/
 ### Getting Started
 - **New to CI/CD?** Start with [CI_CD_SETUP.md](./CI_CD_SETUP.md)
 - **Using Jenkins?** Read [JENKINS_SETUP.md](./JENKINS_SETUP.md)
-- **Jenkins details?** See [jenkins/README.md](./jenkins/README.md)
+- **Jenkins details?** See [jenkins/README.md](README.md)
 
 ### Quick Reference
 
@@ -238,7 +238,7 @@ For issues:
 1. Review logs in Jenkins/GitHub
 2. Check [CI_CD_SETUP.md](./CI_CD_SETUP.md)
 3. Check [JENKINS_SETUP.md](./JENKINS_SETUP.md)
-4. Check [jenkins/README.md](./jenkins/README.md)
+4. Check [jenkins/README.md](README.md)
 5. Review pipeline definitions
 
 ## 📝 Next Steps
